@@ -1,0 +1,1997 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <title>Unit Converter — Konwerter jednostek</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.06);
+      --panel2: rgba(255,255,255,.09);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --border: rgba(255,255,255,.14);
+      --shadow: 0 18px 55px rgba(0,0,0,.45);
+      --accent: #10b981;
+      --accent2:#3b82f6;
+      --good:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    [data-theme="light"]{
+      --bg:#f6f7fb;
+      --panel: rgba(15,23,42,.06);
+      --panel2: rgba(15,23,42,.09);
+      --text: rgba(2,6,23,.92);
+      --muted: rgba(2,6,23,.62);
+      --border: rgba(2,6,23,.14);
+      --shadow: 0 18px 55px rgba(2,6,23,.12);
+      --accent:#059669;
+      --accent2:#2563eb;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(1100px 700px at 20% 10%, rgba(16,185,129,.35), transparent 60%),
+        radial-gradient(900px 600px at 80% 25%, rgba(59,130,246,.25), transparent 60%),
+        radial-gradient(900px 600px at 40% 95%, rgba(34,197,94,.15), transparent 60%),
+        var(--bg);
+      min-height:100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 16px 42px;
+    }
+
+    header{
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+      justify-content:space-between;
+      margin-bottom: 18px;
+    }
+
+    .brand{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .author-name{
+      font-weight: 800;
+      font-size: 28px;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #10b981, #3b82f6, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+    
+    @supports (-webkit-background-clip: text) {
+      .author-name {
+        background: linear-gradient(135deg, #10b981, #3b82f6, #22c55e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 8px 12px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel), transparent);
+      border-radius: 999px;
+      width: fit-content;
+      box-shadow: var(--shadow);
+    }
+
+    .dot{
+      width:10px;height:10px;border-radius:99px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow: 0 0 0 6px rgba(16,185,129,.12);
+    }
+
+    h1{
+      margin: 6px 0 0;
+      font-size: clamp(22px, 3.2vw, 34px);
+      letter-spacing: .2px;
+      line-height:1.15;
+    }
+
+    .sub{
+      color: var(--muted);
+      max-width: 64ch;
+      line-height:1.45;
+      margin: 0;
+    }
+
+    .controls{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top: 6px;
+    }
+
+    .pill{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel2), transparent);
+      box-shadow: var(--shadow);
+    }
+
+    select, button, input{
+      font: inherit;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      outline: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+    
+    select{ 
+      padding-right: 34px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+    
+    input{
+      font-family: var(--mono);
+      font-size: 16px;
+      font-weight: 600;
+    }
+    input::placeholder{ color: rgba(255,255,255,.45); }
+    [data-theme="light"] input::placeholder{ color: rgba(2,6,23,.45); }
+
+    button{
+      cursor:pointer;
+      border:1px solid rgba(16,185,129,.35);
+      background: linear-gradient(135deg, rgba(16,185,129,.35), rgba(59,130,246,.20));
+      transition: transform .06s ease, filter .15s ease;
+      font-weight: 650;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    button:hover{ filter: brightness(1.07); }
+    button:active{ transform: translateY(1px); }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 980px){
+      header{ flex-direction:column; }
+      .controls{ justify-content:flex-start; }
+    }
+
+    .card{
+      border:1px solid var(--border);
+      background: linear-gradient(180deg, var(--panel2), transparent);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .card .hd{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), transparent);
+    }
+    .card .hd h2{
+      margin:0;
+      font-size: 15px;
+      letter-spacing:.2px;
+    }
+    .card .bd{
+      padding: 14px 16px 16px;
+    }
+
+    .category-tabs{
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .tab{
+      padding: 10px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      cursor: pointer;
+      transition: all .2s ease;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab:hover{
+      background: rgba(16,185,129,.1);
+      border-color: var(--accent);
+    }
+
+    .tab.active{
+      background: linear-gradient(135deg, rgba(16,185,129,.25), rgba(59,130,246,.15));
+      border-color: var(--accent);
+      font-weight: 700;
+    }
+
+    .converter-form{
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin: 16px 0;
+    }
+
+    @media (max-width: 680px){
+      .converter-form{
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .swap-btn{
+        transform: rotate(90deg);
+      }
+    }
+
+    .input-group{
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing:.2px;
+      font-weight: 600;
+    }
+
+    .value-input{
+      display: flex;
+      gap: 8px;
+    }
+
+    .value-input input{
+      flex: 1;
+      min-width: 0;
+    }
+
+    .value-input select{
+      min-width: 120px;
+    }
+
+    .swap-btn{
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: transform .2s ease;
+    }
+
+    .swap-btn:hover{
+      transform: rotate(180deg);
+    }
+
+    .result-display{
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(16,185,129,.15), rgba(59,130,246,.10));
+      border: 1px solid rgba(16,185,129,.3);
+    }
+
+    .result-value{
+      font-family: var(--mono);
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 8px 0;
+    }
+
+    .result-label{
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .visual-section{
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(0,0,0,.08);
+    }
+    [data-theme="light"] .visual-section{ background: rgba(2,6,23,.02); }
+
+    .visual-title{
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .explanation-step{
+      margin: 12px 0;
+      padding: 14px;
+      background: rgba(16,185,129,.08);
+      border-radius: 12px;
+      border-left: 4px solid var(--accent);
+    }
+
+    .explanation-step-title{
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-number{
+      background: var(--accent);
+      color: white;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .explanation-content{
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .explanation-content p{
+      margin: 8px 0;
+    }
+
+    .formula-box{
+      padding: 12px;
+      background: rgba(0,0,0,.15);
+      border-radius: 10px;
+      font-family: var(--mono);
+      font-size: 14px;
+      margin: 8px 0;
+      border: 1px dashed rgba(16,185,129,.3);
+    }
+
+    [data-theme="light"] .formula-box{
+      background: rgba(2,6,23,.05);
+    }
+
+    .highlight{
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .highlight-blue{
+      color: var(--accent2);
+      font-weight: 700;
+    }
+
+    .conversion-map{
+      margin: 20px 0;
+      padding: 20px;
+      background: rgba(0,0,0,.12);
+      border-radius: 14px;
+      border: 2px dashed var(--border);
+    }
+
+    [data-theme="light"] .conversion-map{
+      background: rgba(2,6,23,.04);
+    }
+
+    .conversion-map-title{
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .unit-chain{
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0;
+    }
+
+    .unit-box{
+      padding: 10px 14px;
+      background: linear-gradient(135deg, rgba(16,185,129,.2), rgba(59,130,246,.15));
+      border: 2px solid var(--accent);
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      min-width: 60px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(16,185,129,.2);
+    }
+
+    .unit-box.base{
+      background: linear-gradient(135deg, rgba(16,185,129,.4), rgba(59,130,246,.3));
+      border-color: var(--accent2);
+      font-size: 16px;
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(16,185,129,.4);
+    }
+
+    .arrow-box{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .arrow-multiply{
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .arrow-divide{
+      font-size: 11px;
+      color: var(--accent2);
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .map-note{
+      margin-top: 12px;
+      padding: 10px;
+      background: rgba(16,185,129,.08);
+      border-radius: 8px;
+      font-size: 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .scale-visual{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+
+    .scale-bar{
+      flex: 1;
+      height: 40px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 8px;
+      position: relative;
+      min-width: 200px;
+      overflow: hidden;
+    }
+
+    .scale-marker{
+      position: absolute;
+      top: -8px;
+      width: 2px;
+      height: 56px;
+      background: white;
+      box-shadow: 0 0 10px rgba(255,255,255,.5);
+    }
+
+    .scale-label{
+      position: absolute;
+      top: -24px;
+      transform: translateX(-50%);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .quick-conversions{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .quick-card{
+      padding: 12px;
+      background: rgba(0,0,0,.12);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    [data-theme="light"] .quick-card{
+      background: rgba(2,6,23,.04);
+    }
+
+    .quick-card strong{
+      color: var(--accent);
+      font-family: var(--mono);
+    }
+
+    .mini{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    footer{
+      margin-top: 14px;
+      display:flex;
+      justify-content:space-between;
+      gap: 10px;
+      flex-wrap:wrap;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .kbd{
+      font-family: var(--mono);
+      border:1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 10px;
+      background: rgba(0,0,0,.12);
+    }
+    [data-theme="light"] .kbd{ background: rgba(2,6,23,.04); }
+
+    .help-grid{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+
+    .help-card{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(0,0,0,.08);
+    }
+
+    [data-theme="light"] .help-card{
+      background: rgba(2,6,23,.02);
+    }
+
+    .help-card h3{
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .help-card p{
+      margin: 0;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--muted);
+    }
+
+    .toast{
+      padding: 10px 12px;
+      border-radius: 14px;
+      border:1px solid rgba(239,68,68,.35);
+      background: rgba(239,68,68,.12);
+      color: var(--text);
+      display:none;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body data-theme="dark">
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="author-name">Marcin Gwara</div>
+        
+        <div class="badge">
+          <div class="dot"></div>
+          <div style="font-weight:700">Unit Converter</div>
+          <div style="opacity:.55">— konwerter jednostek</div>
+        </div>
+        <h1 id="title">Konwerter jednostek z wizualizacją</h1>
+        <p class="sub" id="subtitle">
+          Przeliczaj długości, masy, objętości i więcej. Zobacz dokładnie jak jednostki się do siebie mają!
+        </p>
+      </div>
+
+      <div class="controls">
+        <div class="pill">
+          <span id="langLabel" class="mini">Język</span>
+          <select id="langSelect" aria-label="Language">
+            <option value="PL">PL</option>
+            <option value="EN">EN</option>
+            <option value="DE">DE</option>
+            <option value="TR">TR</option>
+            <option value="RU">RU</option>
+          </select>
+        </div>
+        <button id="themeBtn" type="button">🌙 / ☀️</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="hd">
+          <h2 id="converterHeader">Konwerter</h2>
+          <p class="mini" id="categoryLabel">Wybierz kategorię</p>
+        </div>
+        <div class="bd">
+          <div class="category-tabs" id="categoryTabs"></div>
+
+          <div class="converter-form">
+            <div class="input-group">
+              <label id="fromLabel">Z</label>
+              <div class="value-input">
+                <input type="number" id="fromValue" placeholder="100" value="100" />
+                <select id="fromUnit"></select>
+              </div>
+            </div>
+
+            <button class="swap-btn" id="swapBtn" type="button">⇄</button>
+
+            <div class="input-group">
+              <label id="toLabel">Na</label>
+              <div class="value-input">
+                <input type="number" id="toValue" placeholder="0" readonly />
+                <select id="toUnit"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="toast" id="toast"></div>
+
+          <div class="result-display" id="resultDisplay" style="display:none;">
+            <div class="result-label" id="resultLabel">Wynik</div>
+            <div class="result-value" id="resultValue">—</div>
+            <div class="mini" id="resultFormula"></div>
+          </div>
+
+          <div class="visual-section" id="visualSection" style="display:none;">
+            <div class="visual-title" id="visualTitle">📊 Wizualizacja</div>
+            <div id="visualContent"></div>
+          </div>
+
+          <div class="visual-section" id="explanationSection" style="display:none;">
+            <div class="visual-title" id="explanationTitle">🧮 Jak to liczymy?</div>
+            <div id="explanationContent"></div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="hd">
+          <h2 id="helpHeader">Szybka pomoc</h2>
+          <p class="mini" id="helpMini">Popularne konwersje</p>
+        </div>
+        <div class="bd">
+          <div class="help-grid" id="helpCards"></div>
+          
+          <hr style="border:0;border-top:1px solid var(--border);margin:16px 0"/>
+          <p class="mini" id="helpTip"></p>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      <div>Projekt edukacyjny © 2024</div>
+      <div>Wersja: <span class="kbd">v1.0 - Unit Converter</span></div>
+    </footer>
+  </div>
+
+<script>
+  // ================== Unit Conversion Data ==================
+  const UNITS = {
+    length: {
+      icon: '📏',
+      units: {
+        mm: { name: 'milimetr', symbol: 'mm', toBase: 0.001 },
+        cm: { name: 'centymetr', symbol: 'cm', toBase: 0.01 },
+        dm: { name: 'decymetr', symbol: 'dm', toBase: 0.1 },
+        m: { name: 'metr', symbol: 'm', toBase: 1 },
+        km: { name: 'kilometr', symbol: 'km', toBase: 1000 }
+      }
+    },
+    mass: {
+      icon: '⚖️',
+      units: {
+        mg: { name: 'miligram', symbol: 'mg', toBase: 0.000001 },
+        g: { name: 'gram', symbol: 'g', toBase: 0.001 },
+        dag: { name: 'dekagram', symbol: 'dag', toBase: 0.01 },
+        kg: { name: 'kilogram', symbol: 'kg', toBase: 1 },
+        q: { name: 'kwintal', symbol: 'q', toBase: 100 },
+        t: { name: 'tona', symbol: 't', toBase: 1000 }
+      }
+    },
+    volume: {
+      icon: '📦',
+      units: {
+        mm3: { name: 'milimetr sześcienny', symbol: 'mm³', toBase: 0.000000001 },
+        cm3: { name: 'centymetr sześcienny', symbol: 'cm³', toBase: 0.000001 },
+        ml: { name: 'mililitr', symbol: 'ml', toBase: 0.001 },
+        cl: { name: 'centilitr', symbol: 'cl', toBase: 0.01 },
+        dl: { name: 'decylitr', symbol: 'dl', toBase: 0.1 },
+        dm3: { name: 'decymetr sześcienny', symbol: 'dm³', toBase: 0.001 },
+        l: { name: 'litr', symbol: 'l', toBase: 1 },
+        hl: { name: 'hektolitr', symbol: 'hl', toBase: 100 },
+        m3: { name: 'metr sześcienny', symbol: 'm³', toBase: 1000 }
+      }
+    },
+    temperature: {
+      icon: '🌡️',
+      units: {
+        c: { name: 'Celsjusz', symbol: '°C', toBase: null },
+        f: { name: 'Fahrenheit', symbol: '°F', toBase: null },
+        k: { name: 'Kelvin', symbol: 'K', toBase: null }
+      }
+    },
+    time: {
+      icon: '⏱️',
+      units: {
+        ms: { name: 'milisekunda', symbol: 'ms', toBase: 0.001 },
+        s: { name: 'sekunda', symbol: 's', toBase: 1 },
+        min: { name: 'minuta', symbol: 'min', toBase: 60 },
+        h: { name: 'godzina', symbol: 'h', toBase: 3600 },
+        day: { name: 'dzień', symbol: 'd', toBase: 86400 },
+        week: { name: 'tydzień', symbol: 'wk', toBase: 604800 },
+        year: { name: 'rok', symbol: 'yr', toBase: 31536000 }
+      }
+    },
+    area: {
+      icon: '📐',
+      units: {
+        mm2: { name: 'milimetr kwadratowy', symbol: 'mm²', toBase: 0.000001 },
+        cm2: { name: 'centymetr kwadratowy', symbol: 'cm²', toBase: 0.0001 },
+        dm2: { name: 'decymetr kwadratowy', symbol: 'dm²', toBase: 0.01 },
+        m2: { name: 'metr kwadratowy', symbol: 'm²', toBase: 1 },
+        ar: { name: 'ar', symbol: 'a', toBase: 100 },
+        ha: { name: 'hektar', symbol: 'ha', toBase: 10000 },
+        km2: { name: 'kilometr kwadratowy', symbol: 'km²', toBase: 1000000 }
+      }
+    }
+  };
+
+  // ================== i18n Translations ==================
+  const T = {
+    PL: {
+      title: "Konwerter jednostek z wizualizacją",
+      subtitle: "Przeliczaj długości, masy, objętości i więcej. Zobacz dokładnie jak jednostki się do siebie mają!",
+      langLabel: "Język",
+      converterHeader: "Konwerter",
+      categoryLabel: "Wybierz kategorię",
+      fromLabel: "Z",
+      toLabel: "Na",
+      resultLabel: "Wynik",
+      visualTitle: "📊 Wizualizacja",
+      explanationTitle: "🧮 Jak to liczymy?",
+      helpHeader: "Szybka pomoc",
+      helpMini: "Popularne konwersje",
+      helpTip: '💡 <b>Wskazówka:</b> Wpisz wartość i zobacz jak automatycznie się przelicza!',
+      explanation: {
+        step1: "Krok 1: Znajdź współczynniki przeliczenia",
+        step1Text: "Każda jednostka ma swój <span class='highlight'>współczynnik</span> względem jednostki bazowej. To jest liczba, przez którą MNOŻYMY lub DZIELIMY, żeby otrzymać jednostkę bazową.",
+        step2: "Krok 2: Oblicz ile to jest w jednostce bazowej",
+        step2Text: "MNOŻYMY wartość początkową przez jej współczynnik. To nam pokazuje ile mamy jednostek bazowych.",
+        step3: "Krok 3: Oblicz ile to jest w jednostce docelowej", 
+        step3Text: "DZIELIMY wartość bazową przez współczynnik jednostki docelowej. To nam pokazuje ile mamy jednostek docelowych.",
+        tempStep1: "Krok 1: Konwersja temperatury",
+        tempStep1Text: "Temperatura wymaga specjalnego wzoru, ponieważ skale mają różne punkty zerowe i różne wielkości stopni.",
+        baseUnit: "Jednostka bazowa",
+        conversionFactor: "Współczynnik",
+        formula: "Wzór",
+        calculation: "Obliczenie",
+        multiplyBy: "Mnożymy przez",
+        divideBy: "Dzielimy przez",
+        equals: "Otrzymujemy",
+        inBaseUnits: "w jednostkach bazowych",
+        conversionMap: "🗺️ Mapa konwersji - jak przechodzić między jednostkami",
+        toGoRight: "W prawo (większe jednostki)",
+        toGoLeft: "W lewo (mniejsze jednostki)",
+        baseUnitIs: "Jednostka bazowa",
+        contains: "zawiera",
+        units: "jednostek",
+        is: "to",
+        larger: "większy",
+        smaller: "mniejszy",
+        than: "niż",
+        whyMultiply: "Dlaczego mnożymy?",
+        whyDivide: "Dlaczego dzielimy?",
+        because: "Ponieważ",
+        timesBigger: "razy więcej",
+        onlyPart: "tylko część",
+        weAsk: "więc pytamy",
+        howManyTimes: "ile razy",
+        fitsIn: "mieści się w",
+        times: "razy",
+        summary: "PODSUMOWANIE",
+        stepByStep: "Krok po kroku:",
+        firstMultiply: "Najpierw mnożymy żeby dostać się do jednostki bazowej, potem dzielimy żeby dostać się do jednostki docelowej!",
+        howToReadMap: "Jak czytać mapę:",
+        toRight: "W prawo (→)",
+        toLeft: "W lewo (←)",
+        weMultiply: "MNOŻYMY",
+        weDivide: "DZIELIMY",
+        example: "Przykład",
+        visualComparison: "Porównanie wizualne",
+        placeValueTable: "Tabela wartości miejscowych",
+        placeValueHelp: "Każda kolumna to inna jednostka - przesuwaj wartość w lewo (×10) lub w prawo (÷10)",
+        hzeLabel: "H = Setki (100), Z = Dziesiątki (10), E = Jedności (1)",
+        zeLabel: "Z = Dziesiątki (10), E = Jedności (1)",
+        areaLabel: "Powierzchnia: Z-E (×100 między jednostkami)",
+        lengthLabel: "Długość: H-Z-E (×10 między jednostkami)",
+        massLabel: "Masa: H-Z-E (×1000 między głównymi jednostkami)",
+        volumeLabel: "Objętość: H-Z-E (×10 między jednostkami)",
+        timeLabel: "Czas: H-Z-E (⚠️ NIE dziesiętny! ×60)",
+        areaExplain: "<strong>📐 Jak działa tabela wartości miejscowych dla powierzchni?</strong><br/>• W pomiarach powierzchni przeskakujemy zawsze <strong>2 miejsca</strong> (×100 lub ÷100)<br/>• Dlaczego? 1 m = 10 dm, ale 1 m² = 10dm × 10dm = <strong>100 dm²</strong><br/>• Każda jednostka ma <strong>kolumny Z-E</strong> (dziesiątki i jedności)<br/>• Przykład: 2203 dm² → wpisz w kolumnie dm²: Z=0, E=3 oraz w m²: Z=2, E=2",
+        lengthExplain: "<strong>📏 Jak działa tabela wartości miejscowych dla długości?</strong><br/>• W pomiarach długości przeskakujemy zawsze <strong>1 miejsce</strong> (×10 lub ÷10)<br/>• Każda jednostka ma <strong>kolumny H-Z-E</strong> (setki, dziesiątki, jedności)<br/>• Przykład: 342 m → wpisz: H=3, Z=4, E=2<br/>• W prawo o jedno miejsce = ×10 (342 m = 3420 dm)<br/>• W lewo o jedno miejsce = ÷10",
+        massExplain: "<strong>⚖️ Jak działa tabela wartości miejscowych dla masy?</strong><br/>• W pomiarach masy przeskakujemy <strong>3 miejsca</strong> między głównymi jednostkami (t-kg-g)<br/>• 1 kg = 1000 g (nie 100!)<br/>• Każda jednostka ma <strong>kolumny H-Z-E</strong><br/>• Przykład: 2,5 kg → kg: E=2, potem g: H=5, Z=0, E=0 (500g)",
+        volumeExplain: "<strong>📦 Jak działa tabela wartości miejscowych dla objętości?</strong><br/>• W pomiarach objętości przeskakujemy <strong>1 miejsce</strong> (×10 lub ÷10)<br/>• Każda jednostka ma <strong>kolumny H-Z-E</strong><br/>• Przykład: 1,5 l → l: E=1, potem dl: E=5 (15 dl)<br/>• Pamiętaj: 1 l = 1000 ml (3 miejsca!)",
+        timeExplain: "<strong>⏱️ Uwaga na czas!</strong><br/>• Czas <strong>NIE jest dziesiętny</strong>! (system 60, nie 10)<br/>• 1 h = <strong>60 min</strong> (nie 100!), 1 min = <strong>60 s</strong><br/>• Tabela wartości miejscowych działa tu tylko ograniczenie<br/>• Tylko ms-s jest dziesiętne: 1 s = 1000 ms"
+      },
+      categories: {
+        length: "Długość",
+        mass: "Masa",
+        volume: "Objętość",
+        temperature: "Temperatura",
+        time: "Czas",
+        area: "Powierzchnia"
+      },
+      quickHelp: {
+        length: ["1 m = 100 cm", "1 m = 10 dm", "1 km = 1000 m", "1 cm = 10 mm"],
+        mass: ["1 kg = 1000 g", "1 kg = 100 dag", "1 t = 1000 kg", "1 q = 100 kg"],
+        volume: ["1 l = 1000 ml", "1 l = 10 dl", "1 l = 100 cl", "1 m³ = 1000 l", "1 hl = 100 l", "1 dm³ = 1 l"],
+        temperature: ["0°C = 32°F", "100°C = 212°F", "0 K = -273.15°C"],
+        time: ["1 min = 60 s", "1 h = 60 min", "1 day = 24 h", "1 year = 365 days"],
+        area: ["1 m² = 100 dm²", "1 m² = 10000 cm²", "1 ha = 100 a", "1 km² = 100 ha"]
+      }
+    },
+    EN: {
+      title: "Unit Converter with visualization",
+      subtitle: "Convert lengths, masses, volumes and more. See exactly how units relate to each other!",
+      langLabel: "Language",
+      converterHeader: "Converter",
+      categoryLabel: "Select category",
+      fromLabel: "From",
+      toLabel: "To",
+      resultLabel: "Result",
+      visualTitle: "📊 Visualization",
+      explanationTitle: "🧮 How do we calculate it?",
+      helpHeader: "Quick help",
+      helpMini: "Popular conversions",
+      helpTip: '💡 <b>Tip:</b> Enter a value and watch it convert automatically!',
+      explanation: {
+        step1: "Step 1: Find the conversion factors",
+        step1Text: "Each unit has its <span class='highlight'>conversion factor</span> relative to the base unit. This is a number we MULTIPLY or DIVIDE by to get the base unit.",
+        step2: "Step 2: Calculate how much this is in base units",
+        step2Text: "We MULTIPLY the initial value by its factor. This shows us how many base units we have.",
+        step3: "Step 3: Calculate how much this is in target units",
+        step3Text: "We DIVIDE the base value by the target unit's factor. This shows us how many target units we have.",
+        tempStep1: "Step 1: Temperature conversion",
+        tempStep1Text: "Temperature requires a special formula because scales have different zero points and different degree sizes.",
+        baseUnit: "Base unit",
+        conversionFactor: "Factor",
+        formula: "Formula",
+        calculation: "Calculation",
+        multiplyBy: "Multiply by",
+        divideBy: "Divide by",
+        equals: "We get",
+        inBaseUnits: "in base units",
+        conversionMap: "🗺️ Conversion Map - how to move between units",
+        toGoRight: "To the right (larger units)",
+        toGoLeft: "To the left (smaller units)",
+        baseUnitIs: "Base unit",
+        contains: "contains",
+        units: "units",
+        is: "is",
+        larger: "larger",
+        smaller: "smaller",
+        than: "than",
+        whyMultiply: "Why do we multiply?",
+        whyDivide: "Why do we divide?",
+        because: "Because",
+        timesBigger: "times more",
+        onlyPart: "only part",
+        weAsk: "so we ask",
+        howManyTimes: "how many times",
+        fitsIn: "fits in",
+        times: "times",
+        summary: "SUMMARY",
+        stepByStep: "Step by step:",
+        firstMultiply: "First we multiply to get to the base unit, then we divide to get to the target unit!",
+        howToReadMap: "How to read the map:",
+        toRight: "To the right (→)",
+        toLeft: "To the left (←)",
+        weMultiply: "MULTIPLY",
+        weDivide: "DIVIDE",
+        example: "Example",
+        visualComparison: "Visual Comparison",
+        placeValueTable: "Place Value Table",
+        placeValueHelp: "Each column is a different unit - move value left (×10) or right (÷10)",
+        hzeLabel: "H = Hundreds (100), T = Tens (10), O = Ones (1)",
+        zeLabel: "T = Tens (10), O = Ones (1)",
+        areaLabel: "Surface: T-O (×100 between units)",
+        lengthLabel: "Length: H-T-O (×10 between units)",
+        massLabel: "Mass: H-T-O (×1000 between main units)",
+        volumeLabel: "Volume: H-T-O (×10 between units)",
+        timeLabel: "Time: H-T-O (⚠️ NOT decimal! ×60)",
+        areaExplain: "<strong>📐 How does the place value table work for area?</strong><br/>• For area measurements, we always jump <strong>2 places</strong> (×100 or ÷100)<br/>• Why? 1 m = 10 dm, but 1 m² = 10dm × 10dm = <strong>100 dm²</strong><br/>• Each unit has <strong>T-O columns</strong> (tens and ones)<br/>• Example: 2203 dm² → write in dm² column: T=0, O=3 and in m²: T=2, O=2",
+        lengthExplain: "<strong>📏 How does the place value table work for length?</strong><br/>• For length measurements, we always jump <strong>1 place</strong> (×10 or ÷10)<br/>• Each unit has <strong>H-T-O columns</strong> (hundreds, tens, ones)<br/>• Example: 342 m → write: H=3, T=4, O=2<br/>• One place to the right = ×10 (342 m = 3420 dm)<br/>• One place to the left = ÷10",
+        massExplain: "<strong>⚖️ How does the place value table work for mass?</strong><br/>• For mass measurements, we jump <strong>3 places</strong> between main units (t-kg-g)<br/>• 1 kg = 1000 g (not 100!)<br/>• Each unit has <strong>H-T-O columns</strong><br/>• Example: 2.5 kg → kg: O=2, then g: H=5, T=0, O=0 (500g)",
+        volumeExplain: "<strong>📦 How does the place value table work for volume?</strong><br/>• For volume measurements, we jump <strong>1 place</strong> (×10 or ÷10)<br/>• Each unit has <strong>H-T-O columns</strong><br/>• Example: 1.5 l → l: O=1, then dl: O=5 (15 dl)<br/>• Remember: 1 l = 1000 ml (3 places!)",
+        timeExplain: "<strong>⏱️ Watch out for time!</strong><br/>• Time is <strong>NOT decimal</strong>! (base 60, not 10)<br/>• 1 h = <strong>60 min</strong> (not 100!), 1 min = <strong>60 s</strong><br/>• The place value table only works partially here<br/>• Only ms-s is decimal: 1 s = 1000 ms"
+      },
+      categories: {
+        length: "Length",
+        mass: "Mass",
+        volume: "Volume",
+        temperature: "Temperature",
+        time: "Time",
+        area: "Area"
+      },
+      quickHelp: {
+        length: ["1 m = 100 cm", "1 m = 10 dm", "1 km = 1000 m", "1 cm = 10 mm"],
+        mass: ["1 kg = 1000 g", "1 kg = 100 dag", "1 t = 1000 kg", "1 q = 100 kg"],
+        volume: ["1 l = 1000 ml", "1 l = 10 dl", "1 l = 100 cl", "1 m³ = 1000 l", "1 hl = 100 l", "1 dm³ = 1 l"],
+        temperature: ["0°C = 32°F", "100°C = 212°F", "0 K = -273.15°C"],
+        time: ["1 min = 60 s", "1 h = 60 min", "1 day = 24 h", "1 year = 365 days"],
+        area: ["1 m² = 100 dm²", "1 m² = 10000 cm²", "1 ha = 100 a", "1 km² = 100 ha"]
+      }
+    },
+    DE: {
+      title: "Einheitenumrechner mit Visualisierung",
+      subtitle: "Rechnen Sie Längen, Massen, Volumen und mehr um. Sehen Sie genau, wie Einheiten zueinander stehen!",
+      langLabel: "Sprache",
+      converterHeader: "Umrechner",
+      categoryLabel: "Kategorie wählen",
+      fromLabel: "Von",
+      toLabel: "Nach",
+      resultLabel: "Ergebnis",
+      visualTitle: "📊 Visualisierung",
+      explanationTitle: "🧮 Wie rechnen wir das?",
+      helpHeader: "Schnellhilfe",
+      helpMini: "Beliebte Umrechnungen",
+      helpTip: '💡 <b>Tipp:</b> Geben Sie einen Wert ein und sehen Sie, wie er automatisch umgerechnet wird!',
+      explanation: {
+        step1: "Schritt 1: Umrechnungsfaktoren finden",
+        step1Text: "Jede Einheit hat ihren <span class='highlight'>Umrechnungsfaktor</span> zur Basiseinheit. Dies ist eine Zahl, mit der wir MULTIPLIZIEREN oder DIVIDIEREN, um die Basiseinheit zu erhalten.",
+        step2: "Schritt 2: Berechnen Sie, wie viel dies in Basiseinheiten ist",
+        step2Text: "Wir MULTIPLIZIEREN den Anfangswert mit seinem Faktor. Dies zeigt uns, wie viele Basiseinheiten wir haben.",
+        step3: "Schritt 3: Berechnen Sie, wie viel dies in Zieleinheiten ist",
+        step3Text: "Wir DIVIDIEREN den Basiswert durch den Faktor der Zieleinheit. Dies zeigt uns, wie viele Zieleinheiten wir haben.",
+        tempStep1: "Schritt 1: Temperaturumrechnung",
+        tempStep1Text: "Temperatur erfordert eine spezielle Formel, da Skalen unterschiedliche Nullpunkte und unterschiedliche Gradgrößen haben.",
+        baseUnit: "Basiseinheit",
+        conversionFactor: "Faktor",
+        formula: "Formel",
+        calculation: "Berechnung",
+        multiplyBy: "Multiplizieren mit",
+        divideBy: "Dividieren durch",
+        equals: "Wir erhalten",
+        inBaseUnits: "in Basiseinheiten",
+        conversionMap: "🗺️ Umrechnungskarte - wie man zwischen Einheiten wechselt",
+        toGoRight: "Nach rechts (größere Einheiten)",
+        toGoLeft: "Nach links (kleinere Einheiten)",
+        baseUnitIs: "Basiseinheit",
+        contains: "enthält",
+        units: "Einheiten",
+        is: "ist",
+        larger: "größer",
+        smaller: "kleiner",
+        than: "als",
+        whyMultiply: "Warum multiplizieren wir?",
+        whyDivide: "Warum dividieren wir?",
+        because: "Weil",
+        timesBigger: "mal mehr",
+        onlyPart: "nur Teil",
+        weAsk: "also fragen wir",
+        howManyTimes: "wie oft",
+        fitsIn: "passt in",
+        times: "mal",
+        summary: "ZUSAMMENFASSUNG",
+        stepByStep: "Schritt für Schritt:",
+        firstMultiply: "Zuerst multiplizieren wir, um zur Basiseinheit zu gelangen, dann dividieren wir, um zur Zieleinheit zu gelangen!",
+        howToReadMap: "Wie man die Karte liest:",
+        toRight: "Nach rechts (→)",
+        toLeft: "Nach links (←)",
+        weMultiply: "MULTIPLIZIEREN",
+        weDivide: "DIVIDIEREN",
+        example: "Beispiel",
+        visualComparison: "Visueller Vergleich",
+        placeValueTable: "Stellenwerttafel",
+        placeValueHelp: "Jede Spalte ist eine andere Einheit - Wert nach links (×10) oder rechts (÷10) verschieben",
+        hzeLabel: "H = Hunderter (100), Z = Zehner (10), E = Einer (1)",
+        zeLabel: "Z = Zehner (10), E = Einer (1)",
+        areaLabel: "Flächen: Z-E (×100 zwischen Einheiten)",
+        lengthLabel: "Längen: H-Z-E (×10 zwischen Einheiten)",
+        massLabel: "Masse: H-Z-E (×1000 zwischen Haupteinheiten)",
+        volumeLabel: "Hohlmaße: H-Z-E (×10 zwischen Einheiten)",
+        timeLabel: "Zeit: H-Z-E (⚠️ NICHT dezimal! ×60)",
+        areaExplain: "<strong>🇩🇪 Wie funktioniert die Stellenwerttafel bei Flächen?</strong><br/>• Bei Flächenmaßen springt man immer <strong>2 Stellen</strong> (×100 oder ÷100)<br/>• Warum? 1 m = 10 dm, aber 1 m² = 10dm × 10dm = <strong>100 dm²</strong><br/>• Jede Einheit hat <strong>Z-E Spalten</strong> (Zehner und Einer)<br/>• Beispiel: 2203 dm² → trage in dm²-Spalte: Z=0, E=3 und in m²-Spalte: Z=2, E=2",
+        lengthExplain: "<strong>🇩🇪 Wie funktioniert die Stellenwerttafel bei Längen?</strong><br/>• Bei Längenmaßen springt man immer <strong>1 Stelle</strong> (×10 oder ÷10)<br/>• Jede Einheit hat <strong>H-Z-E Spalten</strong> (Hunderter, Zehner, Einer)<br/>• Beispiel: 342 m → trage ein: H=3, Z=4, E=2<br/>• Nach rechts eine Stelle = ×10 (342 m = 3420 dm)<br/>• Nach links eine Stelle = ÷10",
+        massExplain: "<strong>🇩🇪 Wie funktioniert die Stellenwerttafel bei Masse?</strong><br/>• Bei Massenmaßen springt man <strong>3 Stellen</strong> zwischen Haupteinheiten (t-kg-g)<br/>• 1 kg = 1000 g (nicht 100!)<br/>• Jede Einheit hat <strong>H-Z-E Spalten</strong><br/>• Beispiel: 2,5 kg → kg: E=2, dann g: H=5, Z=0, E=0 (500g)",
+        volumeExplain: "<strong>🇩🇪 Wie funktioniert die Stellenwerttafel bei Hohlmaßen?</strong><br/>• Bei Hohlmaßen springt man <strong>1 Stelle</strong> (×10 oder ÷10)<br/>• Jede Einheit hat <strong>H-Z-E Spalten</strong><br/>• Beispiel: 1,5 l → l: E=1, dann dl: E=5 (15 dl)<br/>• Merke: 1 l = 1000 ml (3 Stellen!)",
+        timeExplain: "<strong>🇩🇪 Achtung bei Zeit!</strong><br/>• Zeit ist <strong>NICHT dezimal</strong>! (60er-System, nicht 10er)<br/>• 1 h = <strong>60 min</strong> (nicht 100!), 1 min = <strong>60 s</strong><br/>• Die Stellenwerttafel funktioniert hier nur begrenzt<br/>• Nur ms-s ist dezimal: 1 s = 1000 ms"
+      },
+      categories: {
+        length: "Länge",
+        mass: "Masse",
+        volume: "Volumen",
+        temperature: "Temperatur",
+        time: "Zeit",
+        area: "Fläche"
+      },
+      quickHelp: {
+        length: ["1 m = 100 cm", "1 m = 10 dm", "1 km = 1000 m", "1 cm = 10 mm"],
+        mass: ["1 kg = 1000 g", "1 kg = 100 dag", "1 t = 1000 kg", "1 q = 100 kg"],
+        volume: ["1 l = 1000 ml", "1 l = 10 dl", "1 l = 100 cl", "1 m³ = 1000 l", "1 hl = 100 l", "1 dm³ = 1 l"],
+        temperature: ["0°C = 32°F", "100°C = 212°F", "0 K = -273.15°C"],
+        time: ["1 Min = 60 s", "1 Std = 60 Min", "1 Tag = 24 Std", "1 Jahr = 365 Tage"],
+        area: ["1 m² = 100 dm²", "1 m² = 10000 cm²", "1 ha = 100 a", "1 km² = 100 ha"]
+      }
+    },
+    TR: {
+      title: "Görselleştirmeli birim dönüştürücü",
+      subtitle: "Uzunlukları, kütleleri, hacimleri ve daha fazlasını dönüştürün. Birimlerin birbirleriyle ilişkisini tam olarak görün!",
+      langLabel: "Dil",
+      converterHeader: "Dönüştürücü",
+      categoryLabel: "Kategori seçin",
+      fromLabel: "Buradan",
+      toLabel: "Buraya",
+      resultLabel: "Sonuç",
+      visualTitle: "📊 Görselleştirme",
+      explanationTitle: "🧮 Bunu nasıl hesaplıyoruz?",
+      helpHeader: "Hızlı yardım",
+      helpMini: "Popüler dönüşümler",
+      helpTip: '💡 <b>İpucu:</b> Bir değer girin ve otomatik olarak dönüştüğünü görün!',
+      explanation: {
+        step1: "Adım 1: Dönüşüm faktörlerini bulun",
+        step1Text: "Her birimin temel birime göre bir <span class='highlight'>dönüşüm faktörü</span> vardır. Bu, temel birimi elde etmek için ÇARPTĞIMIZ veya BÖLDÜĞÜMÜZ bir sayıdır.",
+        step2: "Adım 2: Bunun temel birimlerde ne kadar olduğunu hesaplayın",
+        step2Text: "Başlangıç değerini faktörüyle ÇARPARIZ. Bu bize kaç temel birimim olduğunu gösterir.",
+        step3: "Adım 3: Bunun hedef birimlerde ne kadar olduğunu hesaplayın",
+        step3Text: "Temel değeri hedef birimin faktörüne BÖLERIZ. Bu bize kaç hedef birimim olduğunu gösterir.",
+        tempStep1: "Adım 1: Sıcaklık dönüşümü",
+        tempStep1Text: "Sıcaklık, ölçeklerin farklı sıfır noktaları ve farklı derece boyutları olduğu için özel bir formül gerektirir.",
+        baseUnit: "Temel birim",
+        conversionFactor: "Faktör",
+        formula: "Formül",
+        calculation: "Hesaplama",
+        multiplyBy: "İle çarp",
+        divideBy: "İle böl",
+        equals: "Elde ederiz",
+        inBaseUnits: "temel birimlerde",
+        conversionMap: "🗺️ Dönüşüm Haritası - birimler arasında nasıl geçilir",
+        toGoRight: "Sağa (daha büyük birimler)",
+        toGoLeft: "Sola (daha küçük birimler)",
+        baseUnitIs: "Temel birim",
+        contains: "içerir",
+        units: "birimler",
+        is: "dir",
+        larger: "daha büyük",
+        smaller: "daha küçük",
+        than: "dan",
+        whyMultiply: "Neden çarpıyoruz?",
+        whyDivide: "Neden bölüyoruz?",
+        because: "Çünkü",
+        timesBigger: "kat daha fazla",
+        onlyPart: "sadece parça",
+        weAsk: "bu yüzden soruyoruz",
+        howManyTimes: "kaç kez",
+        fitsIn: "sığar",
+        times: "kez",
+        summary: "ÖZET",
+        stepByStep: "Adım adım:",
+        firstMultiply: "Önce temel birime ulaşmak için çarpıyoruz, sonra hedef birime ulaşmak için bölüyoruz!",
+        howToReadMap: "Harita nasıl okunur:",
+        toRight: "Sağa (→)",
+        toLeft: "Sola (←)",
+        weMultiply: "ÇARPIYORUZ",
+        weDivide: "BÖLÜYORUZ",
+        example: "Örnek",
+        visualComparison: "Görsel Karşılaştırma",
+        placeValueTable: "Basamak Değeri Tablosu",
+        placeValueHelp: "Her sütun farklı bir birim - değeri sola (×10) veya sağa (÷10) kaydırın",
+        hzeLabel: "Y = Yüzler (100), O = Onlar (10), B = Birler (1)",
+        zeLabel: "O = Onlar (10), B = Birler (1)",
+        areaLabel: "Yüzey: O-B (×100 birimler arası)",
+        lengthLabel: "Uzunluk: Y-O-B (×10 birimler arası)",
+        massLabel: "Kütle: Y-O-B (×1000 ana birimler arası)",
+        volumeLabel: "Hacim: Y-O-B (×10 birimler arası)",
+        timeLabel: "Zaman: Y-O-B (⚠️ Ondalık DEĞİL! ×60)",
+        areaExplain: "<strong>📐 Yüzey için basamak tablosu nasıl çalışır?</strong><br/>• Yüzey ölçümlerinde her zaman <strong>2 basamak</strong> atlıyoruz (×100 veya ÷100)<br/>• Neden? 1 m = 10 dm, ama 1 m² = 10dm × 10dm = <strong>100 dm²</strong><br/>• Her birim <strong>O-B sütunları</strong> var (onlar ve birler)<br/>• Örnek: 2203 dm² → dm² sütununda: O=0, B=3 ve m²'de: O=2, B=2",
+        lengthExplain: "<strong>📏 Uzunluk için basamak tablosu nasıl çalışır?</strong><br/>• Uzunluk ölçümlerinde her zaman <strong>1 basamak</strong> atlıyoruz (×10 veya ÷10)<br/>• Her birim <strong>Y-O-B sütunları</strong> var<br/>• Örnek: 342 m → yaz: Y=3, O=4, B=2<br/>• Sağa bir basamak = ×10 (342 m = 3420 dm)<br/>• Sola bir basamak = ÷10",
+        massExplain: "<strong>⚖️ Kütle için basamak tablosu nasıl çalışır?</strong><br/>• Kütle ölçümlerinde ana birimler arası <strong>3 basamak</strong> atlıyoruz (t-kg-g)<br/>• 1 kg = 1000 g (100 değil!)<br/>• Her birim <strong>Y-O-B sütunları</strong> var<br/>• Örnek: 2,5 kg → kg: B=2, sonra g: Y=5, O=0, B=0 (500g)",
+        volumeExplain: "<strong>📦 Hacim için basamak tablosu nasıl çalışır?</strong><br/>• Hacim ölçümlerinde <strong>1 basamak</strong> atlıyoruz (×10 veya ÷10)<br/>• Her birim <strong>Y-O-B sütunları</strong> var<br/>• Örnek: 1,5 l → l: B=1, sonra dl: B=5 (15 dl)<br/>• Unutma: 1 l = 1000 ml (3 basamak!)",
+        timeExplain: "<strong>⏱️ Zaman için dikkat!</strong><br/>• Zaman <strong>ondalık DEĞİL</strong>! (60 tabanlı, 10 değil)<br/>• 1 h = <strong>60 min</strong> (100 değil!), 1 min = <strong>60 s</strong><br/>• Basamak tablosu burada sadece kısmen çalışır<br/>• Sadece ms-s ondalık: 1 s = 1000 ms"
+      },
+      categories: {
+        length: "Uzunluk",
+        mass: "Kütle",
+        volume: "Hacim",
+        temperature: "Sıcaklık",
+        time: "Zaman",
+        area: "Alan"
+      },
+      quickHelp: {
+        length: ["1 m = 100 cm", "1 m = 10 dm", "1 km = 1000 m", "1 cm = 10 mm"],
+        mass: ["1 kg = 1000 g", "1 kg = 100 dag", "1 t = 1000 kg", "1 q = 100 kg"],
+        volume: ["1 l = 1000 ml", "1 l = 10 dl", "1 l = 100 cl", "1 m³ = 1000 l", "1 hl = 100 l", "1 dm³ = 1 l"],
+        temperature: ["0°C = 32°F", "100°C = 212°F", "0 K = -273.15°C"],
+        time: ["1 dakika = 60 s", "1 saat = 60 dakika", "1 gün = 24 saat", "1 yıl = 365 gün"],
+        area: ["1 m² = 100 dm²", "1 m² = 10000 cm²", "1 ha = 100 a", "1 km² = 100 ha"]
+      }
+    },
+    RU: {
+      title: "Конвертер единиц с визуализацией",
+      subtitle: "Переводите длины, массы, объёмы и многое другое. Увидьте точно, как единицы соотносятся друг с другом!",
+      langLabel: "Язык",
+      converterHeader: "Конвертер",
+      categoryLabel: "Выберите категорию",
+      fromLabel: "Из",
+      toLabel: "В",
+      resultLabel: "Результат",
+      visualTitle: "📊 Визуализация",
+      explanationTitle: "🧮 Как мы это вычисляем?",
+      helpHeader: "Быстрая помощь",
+      helpMini: "Популярные преобразования",
+      helpTip: '💡 <b>Подсказка:</b> Введите значение и наблюдайте, как оно автоматически конвертируется!',
+      explanation: {
+        step1: "Шаг 1: Найдите коэффициенты преобразования",
+        step1Text: "Каждая единица имеет свой <span class='highlight'>коэффициент преобразования</span> относительно базовой единицы. Это число, на которое мы УМНОЖАЕМ или ДЕЛИМ, чтобы получить базовую единицу.",
+        step2: "Шаг 2: Вычислите, сколько это в базовых единицах",
+        step2Text: "Мы УМНОЖАЕМ начальное значение на его коэффициент. Это показывает нам, сколько у нас базовых единиц.",
+        step3: "Шаг 3: Вычислите, сколько это в целевых единицах",
+        step3Text: "Мы ДЕЛИМ базовое значение на коэффициент целевой единицы. Это показывает нам, сколько у нас целевых единиц.",
+        tempStep1: "Шаг 1: Преобразование температуры",
+        tempStep1Text: "Температура требует специальной формулы, потому что шкалы имеют разные нулевые точки и разные размеры градусов.",
+        baseUnit: "Базовая единица",
+        conversionFactor: "Коэффициент",
+        formula: "Формула",
+        calculation: "Вычисление",
+        multiplyBy: "Умножить на",
+        divideBy: "Разделить на",
+        equals: "Получаем",
+        inBaseUnits: "в базовых единицах",
+        conversionMap: "🗺️ Карта преобразований - как переходить между единицами",
+        toGoRight: "Направо (большие единицы)",
+        toGoLeft: "Налево (меньшие единицы)",
+        baseUnitIs: "Базовая единица",
+        contains: "содержит",
+        units: "единиц",
+        is: "это",
+        larger: "больше",
+        smaller: "меньше",
+        than: "чем",
+        whyMultiply: "Почему мы умножаем?",
+        whyDivide: "Почему мы делим?",
+        because: "Потому что",
+        timesBigger: "раз больше",
+        onlyPart: "только часть",
+        weAsk: "поэтому спрашиваем",
+        howManyTimes: "сколько раз",
+        fitsIn: "помещается в",
+        times: "раз",
+        summary: "ИТОГО",
+        stepByStep: "Шаг за шагом:",
+        firstMultiply: "Сначала умножаем, чтобы получить базовую единицу, затем делим, чтобы получить целевую единицу!",
+        howToReadMap: "Как читать карту:",
+        toRight: "Направо (→)",
+        toLeft: "Налево (←)",
+        weMultiply: "УМНОЖАЕМ",
+        weDivide: "ДЕЛИМ",
+        example: "Пример",
+        visualComparison: "Визуальное сравнение",
+        placeValueTable: "Таблица разрядов",
+        placeValueHelp: "Каждый столбец - это другая единица - сдвигайте значение влево (×10) или вправо (÷10)",
+        hzeLabel: "С = Сотни (100), Д = Десятки (10), Е = Единицы (1)",
+        zeLabel: "Д = Десятки (10), Е = Единицы (1)",
+        areaLabel: "Площадь: Д-Е (×100 между единицами)",
+        lengthLabel: "Длина: С-Д-Е (×10 между единицами)",
+        massLabel: "Масса: С-Д-Е (×1000 между основными единицами)",
+        volumeLabel: "Объём: С-Д-Е (×10 между единицами)",
+        timeLabel: "Время: С-Д-Е (⚠️ НЕ десятичное! ×60)",
+        areaExplain: "<strong>📐 Как работает таблица разрядов для площади?</strong><br/>• Для измерений площади мы всегда прыгаем на <strong>2 разряда</strong> (×100 или ÷100)<br/>• Почему? 1 m = 10 dm, но 1 m² = 10dm × 10dm = <strong>100 dm²</strong><br/>• Каждая единица имеет <strong>столбцы Д-Е</strong> (десятки и единицы)<br/>• Пример: 2203 dm² → запишите в столбце dm²: Д=0, Е=3 и в m²: Д=2, Е=2",
+        lengthExplain: "<strong>📏 Как работает таблица разрядов для длины?</strong><br/>• Для измерений длины мы всегда прыгаем на <strong>1 разряд</strong> (×10 или ÷10)<br/>• Каждая единица имеет <strong>столбцы С-Д-Е</strong> (сотни, десятки, единицы)<br/>• Пример: 342 m → запишите: С=3, Д=4, Е=2<br/>• Один разряд вправо = ×10 (342 m = 3420 dm)<br/>• Один разряд влево = ÷10",
+        massExplain: "<strong>⚖️ Как работает таблица разрядов для массы?</strong><br/>• Для измерений массы мы прыгаем на <strong>3 разряда</strong> между основными единицами (t-kg-g)<br/>• 1 kg = 1000 g (не 100!)<br/>• Каждая единица имеет <strong>столбцы С-Д-Е</strong><br/>• Пример: 2,5 kg → kg: Е=2, потом g: С=5, Д=0, Е=0 (500g)",
+        volumeExplain: "<strong>📦 Как работает таблица разрядов для объёма?</strong><br/>• Для измерений объёма мы прыгаем на <strong>1 разряд</strong> (×10 или ÷10)<br/>• Каждая единица имеет <strong>столбцы С-Д-Е</strong><br/>• Пример: 1,5 l → l: Е=1, потом dl: Е=5 (15 dl)<br/>• Помните: 1 l = 1000 ml (3 разряда!)",
+        timeExplain: "<strong>⏱️ Осторожно со временем!</strong><br/>• Время <strong>НЕ десятичное</strong>! (система 60, не 10)<br/>• 1 h = <strong>60 min</strong> (не 100!), 1 min = <strong>60 s</strong><br/>• Таблица разрядов здесь работает только частично<br/>• Только ms-s десятичное: 1 s = 1000 ms"
+      },
+      categories: {
+        length: "Длина",
+        mass: "Масса",
+        volume: "Объём",
+        temperature: "Температура",
+        time: "Время",
+        area: "Площадь"
+      },
+      quickHelp: {
+        length: ["1 м = 100 см", "1 м = 10 дм", "1 км = 1000 м", "1 см = 10 мм"],
+        mass: ["1 кг = 1000 г", "1 кг = 100 даг", "1 т = 1000 кг", "1 ц = 100 кг"],
+        volume: ["1 л = 1000 мл", "1 л = 10 дл", "1 л = 100 кл", "1 м³ = 1000 л", "1 гл = 100 л", "1 дм³ = 1 л"],
+        temperature: ["0°C = 32°F", "100°C = 212°F", "0 K = -273.15°C"],
+        time: ["1 мин = 60 с", "1 ч = 60 мин", "1 день = 24 ч", "1 год = 365 дней"],
+        area: ["1 м² = 100 дм²", "1 м² = 10000 см²", "1 га = 100 а", "1 км² = 100 га"]
+      }
+    }
+  };
+
+  // ================== DOM Elements ==================
+  const $ = (id) => document.getElementById(id);
+  const langSelect = $('langSelect');
+  const themeBtn = $('themeBtn');
+  const categoryTabs = $('categoryTabs');
+  const fromValue = $('fromValue');
+  const toValue = $('toValue');
+  const fromUnit = $('fromUnit');
+  const toUnit = $('toUnit');
+  const swapBtn = $('swapBtn');
+  const resultDisplay = $('resultDisplay');
+  const resultValue = $('resultValue');
+  const resultFormula = $('resultFormula');
+  const visualSection = $('visualSection');
+  const visualContent = $('visualContent');
+  const explanationSection = $('explanationSection');
+  const explanationContent = $('explanationContent');
+  const helpCards = $('helpCards');
+  const toast = $('toast');
+
+  let currentCategory = 'length';
+  let currentLang = 'PL';
+
+  // ================== Conversion Logic ==================
+  function convertTemperature(value, from, to) {
+    // Convert to Celsius first
+    let celsius;
+    if (from === 'c') celsius = value;
+    else if (from === 'f') celsius = (value - 32) * 5/9;
+    else if (from === 'k') celsius = value - 273.15;
+
+    // Convert from Celsius to target
+    if (to === 'c') return celsius;
+    if (to === 'f') return celsius * 9/5 + 32;
+    if (to === 'k') return celsius + 273.15;
+  }
+
+  function convert(value, fromU, toU, category) {
+    if (category === 'temperature') {
+      return convertTemperature(value, fromU, toU);
+    }
+
+    const fromBase = UNITS[category].units[fromU].toBase;
+    const toBase = UNITS[category].units[toU].toBase;
+    const baseValue = value * fromBase;
+    return baseValue / toBase;
+  }
+
+  // ================== UI Functions ==================
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.style.display = 'none', 2400);
+  }
+
+  function updateUnits() {
+    const units = UNITS[currentCategory].units;
+    fromUnit.innerHTML = '';
+    toUnit.innerHTML = '';
+
+    Object.keys(units).forEach(key => {
+      const unit = units[key];
+      const opt1 = new Option(`${unit.name} (${unit.symbol})`, key);
+      const opt2 = new Option(`${unit.name} (${unit.symbol})`, key);
+      fromUnit.add(opt1);
+      toUnit.add(opt2);
+    });
+
+    // Set defaults
+    const keys = Object.keys(units);
+    if (currentCategory === 'length') {
+      fromUnit.value = 'm';
+      toUnit.value = 'cm';
+    } else if (currentCategory === 'mass') {
+      fromUnit.value = 'kg';
+      toUnit.value = 'g';
+    } else if (currentCategory === 'volume') {
+      fromUnit.value = 'l';
+      toUnit.value = 'ml';
+    } else if (currentCategory === 'time') {
+      fromUnit.value = 'h';
+      toUnit.value = 'min';
+    } else if (currentCategory === 'area') {
+      fromUnit.value = 'm2';
+      toUnit.value = 'cm2';
+    } else {
+      fromUnit.value = keys[0];
+      toUnit.value = keys[1] || keys[0];
+    }
+  }
+
+  function performConversion() {
+    const val = parseFloat(fromValue.value);
+    if (isNaN(val)) {
+      toValue.value = '';
+      resultDisplay.style.display = 'none';
+      visualSection.style.display = 'none';
+      return;
+    }
+
+    const result = convert(val, fromUnit.value, toUnit.value, currentCategory);
+    toValue.value = result.toFixed(6).replace(/\.?0+$/, '');
+
+    // Show result
+    const fromU = UNITS[currentCategory].units[fromUnit.value];
+    const toU = UNITS[currentCategory].units[toUnit.value];
+    
+    resultValue.textContent = `${toValue.value} ${toU.symbol}`;
+    resultFormula.textContent = `${val} ${fromU.symbol} = ${toValue.value} ${toU.symbol}`;
+    resultDisplay.style.display = 'block';
+
+    // Create visualization
+    createVisualization(val, result, fromU, toU);
+  }
+
+  function createVisualization(fromVal, toVal, fromU, toU) {
+    const tt = T[currentLang].explanation;
+    visualContent.innerHTML = '';
+    
+    const ratio = toVal / fromVal;
+
+    const visual = document.createElement('div');
+    visual.innerHTML = `
+      <div style="margin: 20px 0;">
+        <!-- Main result display -->
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="display: inline-block; padding: 16px 32px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 14px; font-size: 20px; font-weight: 800; color: white; box-shadow: 0 6px 20px rgba(16,185,129,0.4);">
+            ${fromVal} ${fromU.symbol} = ${toVal.toFixed(6).replace(/\.?0+$/, '')} ${toU.symbol}
+          </div>
+        </div>
+        
+        <!-- Stellenwerttafel (Place Value Table) -->
+        ${createStellenwerttafel(fromVal, toVal, fromU, toU, currentCategory)}
+      </div>
+    `;
+
+    visualContent.appendChild(visual);
+    visualSection.style.display = 'block';
+
+    // Create detailed explanation
+    createExplanation(fromVal, toVal, fromU, toU);
+  }
+
+  function createStellenwerttafel(fromVal, toVal, fromU, toU, category) {
+    const tt = T[currentLang].explanation;
+    
+    // Define EXACT school structure for each category
+    const tables = {
+      area: {
+        // Surface: Z-E for each unit (×100 jumps)
+        units: ['km²', 'ha', 'a', 'm²', 'dm²', 'cm²', 'mm²'],
+        columns: ['Z', 'E'],
+        label: tt.areaLabel || 'Flächen: Z-E (×100 zwischen Einheiten)'
+      },
+      length: {
+        // Length: H-Z-E for each unit (×10 jumps but need 3 digits)
+        units: ['km', 'm', 'dm', 'cm', 'mm'],
+        columns: ['H', 'Z', 'E'],
+        label: tt.lengthLabel || 'Längen: H-Z-E (×10 zwischen Einheiten)'
+      },
+      mass: {
+        // Mass: H-Z-E for t-kg-g (×1000 jumps)
+        units: ['t', 'kg', 'g', 'mg'],
+        columns: ['H', 'Z', 'E'],
+        label: tt.massLabel || 'Masse: H-Z-E (×1000 zwischen Haupteinheiten)'
+      },
+      volume: {
+        // Volume: H-Z-E (×10 jumps)
+        units: ['hl', 'l', 'dl', 'cl', 'ml'],
+        columns: ['H', 'Z', 'E'],
+        label: tt.volumeLabel || 'Hohlmaße: H-Z-E (×10 zwischen Einheiten)'
+      },
+      time: {
+        // Time: H-Z-E but WARNING - not decimal!
+        units: ['h', 'min', 's', 'ms'],
+        columns: ['H', 'Z', 'E'],
+        label: tt.timeLabel || 'Zeit: H-Z-E (⚠️ NICHT dezimal! ×60)'
+      }
+    };
+    
+    const tableConfig = tables[category];
+    if (!tableConfig) return '';
+    
+    const availableUnits = UNITS[category]?.units;
+    if (!availableUnits) return '';
+    
+    // Filter to only existing units
+    const existingUnits = tableConfig.units.filter(symbol => {
+      return Object.values(availableUnits).some(u => u.symbol === symbol);
+    });
+    
+    if (existingUnits.length === 0) return '';
+    
+    // Find unit keys
+    const getUnitKey = (symbol) => {
+      return Object.keys(availableUnits).find(key => availableUnits[key].symbol === symbol);
+    };
+    
+    const fromKey = getUnitKey(fromU.symbol);
+    const toKey = getUnitKey(toU.symbol);
+    
+    if (!fromKey || !toKey) return '';
+    
+    const numColumns = tableConfig.columns.length;
+    
+    // Parse value into H-Z-E or Z-E digits - EXACTLY like elementary school
+    const parseToDigits = (value, numCols) => {
+      if (!value || value < 0.001) {
+        const result = {};
+        tableConfig.columns.forEach(col => result[col] = '');
+        return result;
+      }
+      
+      const intValue = Math.floor(value);
+      const str = intValue.toString();
+      const digits = str.split('').reverse(); // [E, Z, H, T, ...]
+      
+      const result = {};
+      
+      if (numCols === 3) {
+        // H-Z-E: show only last 3 digits (or full number if bigger)
+        if (intValue <= 999) {
+          result['E'] = digits[0] || '';
+          result['Z'] = digits[1] || '';
+          result['H'] = digits[2] || '';
+        } else {
+          // Number too big - show in E column
+          result['E'] = str;
+          result['Z'] = '';
+          result['H'] = '';
+        }
+      } else {
+        // Z-E: show only last 2 digits (or full number if bigger)
+        if (intValue <= 99) {
+          result['E'] = digits[0] || '';
+          result['Z'] = digits[1] || '';
+        } else {
+          // Number too big - show in E column
+          result['E'] = str;
+          result['Z'] = '';
+        }
+      }
+      
+      return result;
+    };
+    
+    // Build table HTML
+    let html = `
+      <div style="padding: 20px; background: rgba(0,0,0,0.08); border-radius: 14px; border: 2px solid var(--border); margin-bottom: 20px;">
+        <div style="text-align: center; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: var(--accent);">
+          📊 ${tt.placeValueTable || 'Stellenwerttafel'}
+        </div>
+        <div style="text-align: center; margin-bottom: 12px; font-size: 12px; color: var(--muted); font-style: italic;">
+          ${tableConfig.label}
+        </div>
+        <div style="text-align: center; margin-bottom: 16px; font-size: 11px; color: var(--muted);">
+          ${numColumns === 3 ? (tt.hzeLabel || 'H = Hunderter (100), Z = Zehner (10), E = Einer (1)') : (tt.zeLabel || 'Z = Zehner (10), E = Einer (1)')}
+        </div>
+        
+        <div style="overflow-x: auto;">
+          <table style="width: 100%; border-collapse: collapse; margin: 0 auto;">
+            <!-- Unit headers -->
+            <tr>
+              ${existingUnits.map(symbol => `
+                <th colspan="${numColumns}" style="padding: 8px 4px; background: linear-gradient(180deg, var(--accent), var(--accent2)); color: white; font-size: 12px; font-weight: 700; border: 2px solid rgba(255,255,255,0.2);">
+                  ${symbol}
+                </th>
+              `).join('')}
+            </tr>
+            
+            <!-- Column sub-headers -->
+            <tr>
+              ${existingUnits.map(() => 
+                tableConfig.columns.map(col => `
+                  <th style="padding: 6px 3px; background: rgba(16,185,129,0.2); color: var(--text); font-size: 10px; font-weight: 700; border: 1px solid var(--border);">${col}</th>
+                `).join('')
+              ).join('')}
+            </tr>
+            
+            <!-- Values -->
+            <tr>
+              ${existingUnits.map(symbol => {
+                const unitKey = getUnitKey(symbol);
+                const isFrom = symbol === fromU.symbol;
+                const isTo = symbol === toU.symbol;
+                
+                let value = null;
+                if (isFrom) value = fromVal;
+                else if (isTo) value = toVal;
+                else {
+                  // Calculate intermediate value
+                  const fromFactor = availableUnits[fromKey].toBase;
+                  const baseValue = fromVal * fromFactor;
+                  const targetFactor = availableUnits[unitKey].toBase;
+                  const calc = baseValue / targetFactor;
+                  if (calc >= 0.001 && calc < 10000000) {
+                    value = calc;
+                  }
+                }
+                
+                const digits = parseToDigits(value, numColumns);
+                
+                const highlight = isFrom ? 'background: rgba(16,185,129,0.25); border: 3px solid var(--accent);' 
+                              : isTo ? 'background: rgba(59,130,246,0.25); border: 3px solid var(--accent2);'
+                              : 'background: rgba(0,0,0,0.03); border: 1px solid var(--border);';
+                
+                return tableConfig.columns.map(col => `
+                  <td style="padding: 12px 4px; text-align: center; font-size: 15px; font-weight: 800; font-family: var(--mono); color: var(--text); ${highlight} min-width: 35px;">
+                    ${digits[col] || '-'}
+                  </td>
+                `).join('');
+              }).join('')}
+            </tr>
+          </table>
+        </div>
+        
+        <div style="margin-top: 16px; display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+            <div style="width: 20px; height: 20px; background: rgba(16,185,129,0.3); border: 2px solid var(--accent); border-radius: 4px;"></div>
+            <span style="color: var(--muted); font-weight: 600;">${fromVal} ${fromU.symbol}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 12px;">
+            <div style="width: 20px; height: 20px; background: rgba(59,130,246,0.3); border: 2px solid var(--accent2); border-radius: 4px;"></div>
+            <span style="color: var(--muted); font-weight: 600;">${toVal.toFixed(3).replace(/\.?0+$/, '')} ${toU.symbol}</span>
+          </div>
+        </div>
+        
+        <div style="margin-top: 12px; padding: 14px; background: rgba(255,255,255,0.5); border-radius: 8px; border-left: 4px solid var(--accent);">
+          <div style="font-size: 13px; line-height: 1.7; color: var(--text);">
+            ${category === 'area' ? tt.areaExplain 
+              : category === 'length' ? tt.lengthExplain 
+              : category === 'mass' ? tt.massExplain 
+              : category === 'volume' ? tt.volumeExplain 
+              : category === 'time' ? tt.timeExplain 
+              : ''}
+          </div>
+        </div>
+        
+        <div style="margin-top: 12px; text-align: center; font-size: 12px; color: var(--muted); font-style: italic;">
+          💡 ${tt.placeValueHelp || 'Komma nach rechts = ×10, nach links = ÷10'}
+        </div>
+      </div>
+    `;
+    
+    return html;
+  }
+
+  function createExplanation(fromVal, toVal, fromU, toU) {
+    const tt = T[currentLang].explanation;
+    explanationContent.innerHTML = '';
+
+    if (currentCategory === 'temperature') {
+      // Special explanation for temperature
+      const step1 = document.createElement('div');
+      step1.className = 'explanation-step';
+      
+      let formula = '';
+      const fromKey = fromUnit.value;
+      const toKey = toUnit.value;
+      
+      if (fromKey === 'c' && toKey === 'f') {
+        formula = `°F = (°C × 9/5) + 32 = (${fromVal} × 9/5) + 32 = ${toVal.toFixed(2)}°F`;
+      } else if (fromKey === 'f' && toKey === 'c') {
+        formula = `°C = (°F - 32) × 5/9 = (${fromVal} - 32) × 5/9 = ${toVal.toFixed(2)}°C`;
+      } else if (fromKey === 'c' && toKey === 'k') {
+        formula = `K = °C + 273.15 = ${fromVal} + 273.15 = ${toVal.toFixed(2)}K`;
+      } else if (fromKey === 'k' && toKey === 'c') {
+        formula = `°C = K - 273.15 = ${fromVal} - 273.15 = ${toVal.toFixed(2)}°C`;
+      } else if (fromKey === 'f' && toKey === 'k') {
+        formula = `K = (°F - 32) × 5/9 + 273.15 = (${fromVal} - 32) × 5/9 + 273.15 = ${toVal.toFixed(2)}K`;
+      } else if (fromKey === 'k' && toKey === 'f') {
+        formula = `°F = (K - 273.15) × 9/5 + 32 = (${fromVal} - 273.15) × 9/5 + 32 = ${toVal.toFixed(2)}°F`;
+      }
+
+      step1.innerHTML = `
+        <div class="explanation-step-title">
+          <span class="step-number">1</span>
+          <span>${tt.tempStep1}</span>
+        </div>
+        <div class="explanation-content">
+          <p>${tt.tempStep1Text}</p>
+          <div class="formula-box">
+            <strong>${tt.formula}:</strong><br/>
+            ${formula}
+          </div>
+        </div>
+      `;
+      
+      explanationContent.appendChild(step1);
+    } else {
+      // ULTRA-DETAILED 3-step explanation for other units
+      const fromFactor = fromU.toBase;
+      const toFactor = toU.toBase;
+      const baseValue = fromVal * fromFactor;
+      const finalValue = baseValue / toFactor;
+
+      // Find the base unit (toBase = 1) to display its name
+      const baseUnitKey = Object.keys(UNITS[currentCategory].units).find(key => 
+        UNITS[currentCategory].units[key].toBase === 1
+      );
+      const baseUnitInfo = baseUnitKey ? UNITS[currentCategory].units[baseUnitKey] : null;
+      const baseUnitDisplay = baseUnitInfo ? `${baseUnitInfo.symbol} (${baseUnitInfo.name})` : tt.baseUnit;
+
+      // Step 1: Show conversion factors with clear explanation
+      const step1 = document.createElement('div');
+      step1.className = 'explanation-step';
+      step1.innerHTML = `
+        <div class="explanation-step-title">
+          <span class="step-number">1</span>
+          <span>${tt.step1}</span>
+        </div>
+        <div class="explanation-content">
+          <p>${tt.step1Text}</p>
+          <div class="formula-box">
+            📌 <strong>1 ${fromU.symbol}</strong> = <span class="highlight">${fromFactor}</span> ${baseUnitDisplay}<br/>
+            📌 <strong>1 ${toU.symbol}</strong> = <span class="highlight">${toFactor}</span> ${baseUnitDisplay}
+          </div>
+          <p style="margin-top: 10px; font-size: 12px; color: var(--muted);">
+            ${fromFactor === 1 
+              ? `ℹ️ <strong>${fromU.symbol} = ${tt.baseUnit} ⭐</strong>` 
+              : `ℹ️ ${fromU.symbol} ${tt.is} <strong>${fromFactor > 1 ? tt.larger : tt.smaller}</strong> ${tt.than} <strong>${baseUnitDisplay}</strong>`
+            }
+            ${(fromFactor !== 1 || toFactor !== 1) ? '<br/>' : ''}
+            ${toFactor === 1 
+              ? `ℹ️ <strong>${toU.symbol} = ${tt.baseUnit} ⭐</strong>` 
+              : fromFactor === 1 
+                ? `ℹ️ ${toU.symbol} ${tt.is} <strong>${toFactor > 1 ? tt.larger : tt.smaller}</strong> ${tt.than} <strong>${baseUnitDisplay}</strong>` 
+                : `ℹ️ ${toU.symbol} ${tt.is} <strong>${toFactor > 1 ? tt.larger : tt.smaller}</strong> ${tt.than} <strong>${baseUnitDisplay}</strong>`
+            }
+          </p>
+        </div>
+      `;
+      explanationContent.appendChild(step1);
+
+      // Step 2: Multiplication to base unit - VERY DETAILED
+      const step2 = document.createElement('div');
+      step2.className = 'explanation-step';
+      step2.innerHTML = `
+        <div class="explanation-step-title">
+          <span class="step-number">2</span>
+          <span>${tt.step2}</span>
+        </div>
+        <div class="explanation-content">
+          <p>${tt.step2Text}</p>
+          <div class="formula-box">
+            <strong>✖️ ${tt.multiplyBy}:</strong><br/>
+            ${fromVal} ${fromU.symbol} × ${fromFactor} = <span class="highlight-blue">${baseValue.toFixed(9).replace(/\.?0+$/, '')}</span> ${baseUnitDisplay}
+          </div>
+          <p style="margin-top: 10px; font-size: 12px; color: var(--muted);">
+            💡 <strong>${tt.whyMultiply}</strong><br/>
+            ${tt.because} ${fromFactor > 1 
+              ? `1 ${fromU.symbol} ${tt.is} ${fromFactor} ${tt.units} ${baseUnitDisplay}, ${fromVal} ${fromU.symbol} ${tt.is} <strong>${fromVal} ${tt.timesBigger}</strong> = ${baseValue.toFixed(3)} ${tt.units} ${baseUnitDisplay}`
+              : `1 ${baseUnitDisplay} ${tt.is} ${(1/fromFactor).toFixed(0)} ${fromU.symbol}, ${fromVal} ${fromU.symbol} ${tt.is} <strong>${tt.onlyPart}</strong> ${baseUnitDisplay} = ${baseValue.toFixed(6)} ${tt.units} ${baseUnitDisplay}`
+            }
+          </p>
+        </div>
+      `;
+      explanationContent.appendChild(step2);
+
+      // Step 3: Division to target unit - VERY DETAILED
+      const step3 = document.createElement('div');
+      step3.className = 'explanation-step';
+      step3.innerHTML = `
+        <div class="explanation-step-title">
+          <span class="step-number">3</span>
+          <span>${tt.step3}</span>
+        </div>
+        <div class="explanation-content">
+          <p>${tt.step3Text}</p>
+          <div class="formula-box">
+            <strong>➗ ${tt.divideBy}:</strong><br/>
+            <span class="highlight-blue">${baseValue.toFixed(9).replace(/\.?0+$/, '')}</span> ${baseUnitDisplay} ÷ ${toFactor} = <span class="highlight">${finalValue.toFixed(9).replace(/\.?0+$/, '')}</span> ${toU.symbol}
+          </div>
+          <p style="margin-top: 10px; font-size: 12px; color: var(--muted);">
+            💡 <strong>${tt.whyDivide}</strong><br/>
+            ${toFactor > 1
+              ? `${tt.because} 1 ${toU.symbol} ${tt.is} ${toFactor} ${tt.units} ${baseUnitDisplay}, ${tt.weAsk}: "${tt.howManyTimes} ${toFactor} ${tt.fitsIn} ${baseValue.toFixed(3)}?" = ${finalValue.toFixed(3)} ${tt.times}`
+              : `${tt.because} 1 ${baseUnitDisplay} ${tt.is} ${(1/toFactor).toFixed(0)} ${toU.symbol}, ${baseValue.toFixed(3)} ${tt.units} ${baseUnitDisplay} ${tt.is} <strong>${(1/toFactor).toFixed(0)} ${tt.timesBigger}</strong> ${toU.symbol} = ${finalValue.toFixed(3)} ${toU.symbol}`
+            }
+          </p>
+        </div>
+      `;
+      explanationContent.appendChild(step3);
+
+      // BONUS: Summary box
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 16px; padding: 14px; background: rgba(16,185,129,0.1); border-radius: 12px; border: 2px solid var(--accent);';
+      summary.innerHTML = `
+        <div style="font-size: 14px; font-weight: 700; color: var(--accent); margin-bottom: 8px;">
+          ✅ ${tt.summary}:
+        </div>
+        <div style="font-size: 13px; line-height: 1.6;">
+          ${fromVal} ${fromU.symbol} <strong>×</strong> ${fromFactor} = ${baseValue.toFixed(6).replace(/\.?0+$/, '')} ${baseUnitDisplay}<br/>
+          ${baseValue.toFixed(6).replace(/\.?0+$/, '')} ${baseUnitDisplay} <strong>÷</strong> ${toFactor} = <span class="highlight">${finalValue.toFixed(6).replace(/\.?0+$/, '')} ${toU.symbol}</span>
+        </div>
+        <div style="margin-top: 10px; font-size: 12px; color: var(--muted);">
+          🎯 <strong>${tt.stepByStep}</strong> ${tt.firstMultiply}
+        </div>
+      `;
+      explanationContent.appendChild(summary);
+
+      // SUPER BONUS: Visual Conversion Map
+      const map = createConversionMap();
+      if (map) {
+        explanationContent.appendChild(map);
+      }
+    }
+
+    explanationSection.style.display = 'block';
+  }
+
+  function createConversionMap() {
+    const tt = T[currentLang].explanation;
+    const category = currentCategory;
+    
+    // Define conversion chains for each category
+    const chains = {
+      length: [
+        { unit: 'mm', name: 'milimetr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'cm', name: 'centymetr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'dm', name: 'decymetr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'm', name: 'metr', base: true },
+        { op: '×1000', opRev: '÷1000' },
+        { unit: 'km', name: 'kilometr' }
+      ],
+      mass: [
+        { unit: 'mg', name: 'miligram' },
+        { op: '×1000', opRev: '÷1000' },
+        { unit: 'g', name: 'gram' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'dag', name: 'dekagram' },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'kg', name: 'kilogram', base: true },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'q', name: 'kwintal' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 't', name: 'tona' }
+      ],
+      volume: [
+        { unit: 'mm³', name: 'mm³' },
+        { op: '×1000', opRev: '÷1000' },
+        { unit: 'cm³', name: 'cm³' },
+        { op: '×1000', opRev: '÷1000' },
+        { unit: 'ml', name: 'mililitr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'cl', name: 'centilitr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'dl', name: 'decylitr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'l', name: 'litr', base: true },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'hl', name: 'hektolitr' },
+        { op: '×10', opRev: '÷10' },
+        { unit: 'm³', name: 'm³' }
+      ],
+      area: [
+        { unit: 'mm²', name: 'mm²' },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'cm²', name: 'cm²' },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'dm²', name: 'dm²' },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'm²', name: 'm²', base: true },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'a', name: 'ar' },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'ha', name: 'hektar' },
+        { op: '×100', opRev: '÷100' },
+        { unit: 'km²', name: 'km²' }
+      ],
+      time: [
+        { unit: 'ms', name: 'milisekunda' },
+        { op: '×1000', opRev: '÷1000' },
+        { unit: 's', name: 'sekunda', base: true },
+        { op: '×60', opRev: '÷60' },
+        { unit: 'min', name: 'minuta' },
+        { op: '×60', opRev: '÷60' },
+        { unit: 'h', name: 'godzina' },
+        { op: '×24', opRev: '÷24' },
+        { unit: 'day', name: 'dzień' }
+      ]
+    };
+
+    const chain = chains[category];
+    if (!chain) return null;
+
+    const mapDiv = document.createElement('div');
+    mapDiv.className = 'conversion-map';
+    
+    let html = `<div class="conversion-map-title">${tt.conversionMap}</div>`;
+    html += '<div class="unit-chain">';
+    
+    chain.forEach((item, idx) => {
+      if (item.unit) {
+        // Unit box
+        html += `<div class="unit-box ${item.base ? 'base' : ''}" title="${item.name}">
+          ${item.unit}
+          ${item.base ? '<div style="font-size:9px;margin-top:2px;">⭐ '+tt.baseUnitIs+'</div>' : ''}
+        </div>`;
+      } else {
+        // Arrow with operations
+        html += `<div class="arrow-box">
+          <div class="arrow-multiply">→ ${item.op}</div>
+          <div class="arrow-divide">← ${item.opRev}</div>
+        </div>`;
+      }
+    });
+    
+    html += '</div>';
+    html += `<div class="map-note">
+      💡 <strong>${tt.howToReadMap}</strong><br/>
+      ${tt.toRight} = <span class="highlight">${tt.weMultiply}</span> | 
+      ${tt.toLeft} = <span class="highlight-blue">${tt.weDivide}</span><br/>
+      ${tt.example}: 1 m × 100 = 100 cm | 100 cm ÷ 100 = 1 m
+    </div>`;
+    
+    mapDiv.innerHTML = html;
+    return mapDiv;
+  }
+
+  function renderCategories() {
+    const tt = T[currentLang];
+    categoryTabs.innerHTML = '';
+    
+    Object.keys(UNITS).forEach(cat => {
+      const tab = document.createElement('button');
+      tab.className = 'tab' + (cat === currentCategory ? ' active' : '');
+      tab.innerHTML = `${UNITS[cat].icon} ${tt.categories[cat]}`;
+      tab.onclick = () => {
+        currentCategory = cat;
+        renderCategories();
+        updateUnits();
+        performConversion();
+        renderHelpCards();
+      };
+      categoryTabs.appendChild(tab);
+    });
+  }
+
+  function renderHelpCards() {
+    const tt = T[currentLang];
+    helpCards.innerHTML = '';
+    
+    const helps = tt.quickHelp[currentCategory] || [];
+    helps.forEach(text => {
+      const card = document.createElement('div');
+      card.className = 'quick-card';
+      card.innerHTML = `<strong>${text.split('=')[0]}</strong> = ${text.split('=')[1]}`;
+      helpCards.appendChild(card);
+    });
+  }
+
+  function applyLang(lang) {
+    currentLang = lang;
+    const tt = T[lang];
+    
+    $('title').textContent = tt.title;
+    $('subtitle').textContent = tt.subtitle;
+    $('langLabel').textContent = tt.langLabel;
+    $('converterHeader').textContent = tt.converterHeader;
+    $('categoryLabel').textContent = tt.categoryLabel;
+    $('fromLabel').textContent = tt.fromLabel;
+    $('toLabel').textContent = tt.toLabel;
+    $('resultLabel').textContent = tt.resultLabel;
+    $('visualTitle').textContent = tt.visualTitle;
+    $('explanationTitle').textContent = tt.explanationTitle;
+    $('helpHeader').textContent = tt.helpHeader;
+    $('helpMini').textContent = tt.helpMini;
+    $('helpTip').innerHTML = tt.helpTip;
+
+    renderCategories();
+    renderHelpCards();
+  }
+
+  // ================== Event Listeners ==================
+  fromValue.addEventListener('input', performConversion);
+  fromUnit.addEventListener('change', performConversion);
+  toUnit.addEventListener('change', performConversion);
+
+  swapBtn.addEventListener('click', () => {
+    const tempUnit = fromUnit.value;
+    fromUnit.value = toUnit.value;
+    toUnit.value = tempUnit;
+    
+    const tempVal = fromValue.value;
+    fromValue.value = toValue.value;
+    
+    performConversion();
+  });
+
+  themeBtn.addEventListener('click', () => {
+    const b = document.body;
+    b.dataset.theme = b.dataset.theme === 'dark' ? 'light' : 'dark';
+  });
+
+  langSelect.addEventListener('change', () => {
+    applyLang(langSelect.value);
+    performConversion();
+  });
+
+  // Prevent double-tap zoom on iOS
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+
+  // ================== Init ==================
+  applyLang('PL');
+  updateUnits();
+  performConversion();
+</script>
+</body>
+</html>
